@@ -8,43 +8,34 @@ print(df.info())
 print(df.columns)
 print("Missing Values:\n",df.isnull().sum())
 print("Duplicate Values:",df.duplicated().sum())
+print(df['city'].unique())
 df['date']=pd.to_datetime(df['date'])
 df['month']=df['date'].dt.month
 df['year']=df['date'].dt.year
 print(df.describe())
-plt.figure()
-plt.plot(df['date'],df['pm2_5'])
+for city, group in df.groupby('city'):
+    plt.plot(group['date'],group['pm2_5'])
+#plt.plot(df['date'],df['pm2_5'])
+plt.legend(["Delhi","Mumbai","Bengaluru","Chennai","Kolkata","Hyderabad"],loc="upper right")
 plt.xlabel("Date")
 plt.ylabel("PM2.5")
 plt.title("PM2.5 Over Time")
-plt.xticks(rotation=45)
 plt.show()
 city_avg = df.groupby('city').mean(numeric_only=True)
-print(city_avg[['pm2_5']])
-print(city_avg[['pm10']])
-print(city_avg[['carbon_monoxide']])
-print(city_avg[['nitrogen_dioxide']])
-city_avg['pm2_5'].plot(kind='bar')
-plt.title("Average PM2.5 by City")
-plt.xlabel("City")
-plt.ylabel("PM2.5")
-plt.show()
-city_avg['pm10'].plot(kind='bar')
-plt.title("Average PM10 by City")
-plt.xlabel("City")
-plt.ylabel("PM10")
-plt.show()
-city_avg['carbon_monoxide'].plot(kind='bar')
-plt.title("Average CO by City")
-plt.xlabel("City")
-plt.ylabel("CO")
-plt.show()
-city_avg['nitrogen_dioxide'].plot(kind='bar')
-plt.title("Average NO2 by City")
-plt.xlabel("City")
-plt.ylabel("NO2")
-plt.show()
-'''def AQI_Category(pm25):
+pollutants = {
+    'pm2_5': 'PM2.5',
+    'pm10': 'PM10',
+    'carbon_monoxide': 'CO',
+    'nitrogen_dioxide': 'NO2'
+}
+for col, label in pollutants.items():
+    print(city_avg[[col]])
+    city_avg[col].plot(kind='bar')
+    plt.title(f"Average {label} by City")
+    plt.xlabel("City")
+    plt.ylabel(label)
+    plt.show()
+def AQI_Category(pm25):
     if pm25 <= 30:
         return 'Good'
     elif pm25 <=60:
@@ -58,9 +49,8 @@ plt.show()
     else:
         return 'Severe'
 df['AQI_Category']=df['pm2_5'].apply(AQI_Category)
-print(df.columns)
-print(f"Cities: {df['city'].unique()}")
-plt.figure(figsize=(14, 6))
+print(df['AQI_Category'].value_counts())
+'''plt.figure(figsize=(14, 6))
 sns.boxplot(data=df, x='city', y='pm2_5')
 plt.title('PM2.5 Distribution Across Cities', fontsize=14, fontweight='bold')
 plt.xlabel('City')
